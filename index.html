@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Cek Stok ATK</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7f6; padding: 20px; color: #333; }
+        .container { max-width: 700px; margin: auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        h2 { text-align: center; color: #2c3e50; margin-bottom: 20px; }
+        
+        .search-area { margin-bottom: 25px; }
+        input { 
+            width: 100%; padding: 15px; border: 2px solid #ddd; border-radius: 8px; 
+            font-size: 16px; box-sizing: border-box; transition: 0.3s;
+        }
+        input:focus { border-color: #007bff; outline: none; box-shadow: 0 0 8px rgba(0,123,255,0.1); }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background-color: #007bff; color: white; border-radius: 4px 4px 0 0; }
+        
+        .badge { background: #6c757d; color: white; padding: 3px 8px; border-radius: 4px; font-size: 13px; font-family: monospace; }
+        .no-result { text-align: center; padding: 20px; color: #e74c3c; display: none; font-weight: bold; }
+        tr:hover { background-color: #f9fcff; }
+        
+        .loading { text-align: center; color: #007bff; font-style: italic; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Cek Nama & Kode Barang</h2>
+    
+    <div class="search-area">
+        <input type="text" id="searchInput" onkeyup="filterBarang()" placeholder="Ketik nama barang (misal: Kertas atau Pulpen)...">
+    </div>
+
+    <div id="loader" class="loading">Menghubungkan ke database...</div>
+
+    <table id="barangTable" style="display:none;">
+        <thead>
+            <tr>
+                <th>Nama Item</th>
+                <th>Unit</th>
+                <th>Asset Code</th>
+            </tr>
+        </thead>
+        <tbody id="listBarang"></tbody>
+    </table>
+    
+    <div id="noResult" class="no-result">Barang tidak ditemukan...</div>
+</div>
+
+<script>
+    // Link CSV yang kamu berikan
+    const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR3FBSOlh6Bjh3V02psbCoR8dR58rNhCNkldJOEt-JIkI5gZokGZ85Y-KTNhL2dsLU2vXOU4SFODzD7/pub?gid=0&single=true&output=csv";
+    
+    let dataAset = [];
+
+    // Fungsi mengambil data dari Google Sheets
+    function muatDataDariSheets() {
+        Papa.parse(csvUrl, {
+            download: true,
+            header: true,
+            complete: function(results) {
+                dataAset = results.data;
+                document.getElementById('loader').style.display = "none";
+                document.getElementById('barangTable').style.display = "table";
+                tampilkanBarang();
+            },
+            error: function(err) {
+                document.getElementById('loader').innerHTML = "Gagal memuat data. Pastikan koneksi internet aktif.";
+            }
+        });
+    }
+
+    function tampilkanBarang(filter = "") {
+        const listBody = document.getElementById('listBarang');
+        const noResult = document.getElementById('noResult');
+        listBody.innerHTML = "";
+        let found = false;
+        const lowerFilter = filter.toLowerCase();
+
+        dataAset.forEach(item => {
+            // Kita gunakan nama kolom sesuai CSV kamu: Nama Item, Unit, Asset Code
+            const nama = item["Nama Item"] || "";
+            const unit = item["Unit"] || "";
+            const kode = item["Asset Code"] || "";
+
+            if (nama.toLowerCase().includes(lowerFilter) || kode.toLowerCase().includes(lowerFilter)) {
+                const row = `<tr>
+                    <td><strong>${nama}</strong></td>
+                    <td>${unit}</td>
+                    <td><span class="badge">${kode}</span></td>
+                </tr>`;
+                listBody.innerHTML += row;
+                found = true;
+            }
+        });
+
+        noResult.style.display = (found || filter === "") ? "none" : "block";
+    }
+
+    function filterBarang() {
+        const keyword = document.getElementById('searchInput').value;
+        tampilkanBarang(keyword);
+    }
+
+    // Jalankan saat halaman dibuka
+    window.onload = muatDataDariSheets;
+</script>
+
+</body>
+</html>
