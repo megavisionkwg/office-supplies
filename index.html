@@ -42,9 +42,10 @@
     <table id="barangTable" style="display:none;">
         <thead>
             <tr>
+                <th>Category</th>
                 <th>Nama Item</th>
                 <th>Unit</th>
-                <th>Asset Code</th>
+                <th>Kode Item</th>
             </tr>
         </thead>
         <tbody id="listBarang"></tbody>
@@ -55,7 +56,7 @@
 
 <script>
     // Link CSV yang kamu berikan
-    const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR3FBSOlh6Bjh3V02psbCoR8dR58rNhCNkldJOEt-JIkI5gZokGZ85Y-KTNhL2dsLU2vXOU4SFODzD7/pub?gid=0&single=true&output=csv";
+    const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSLhW_GgsjzACM0Aaj1g6BZU8lzMlyxW4bV1TfNpWjY3QKzyLC9ts7jygBHXG0yLAjVqXDXknhImWyf/pub?gid=18618796&single=true&output=csv";
     
     let dataAset = [];
 
@@ -85,12 +86,14 @@
 
         dataAset.forEach(item => {
             // Kita gunakan nama kolom sesuai CSV kamu: Nama Item, Unit, Asset Code
+            const category = item["Category"] || "";
             const nama = item["Nama Item"] || "";
             const unit = item["Unit"] || "";
-            const kode = item["Asset Code"] || "";
+            const kode = item["Kode Item"] || "";
 
             if (nama.toLowerCase().includes(lowerFilter) || kode.toLowerCase().includes(lowerFilter)) {
                 const row = `<tr>
+                    <td><strong>${category}</strong></td>
                     <td><strong>${nama}</strong></td>
                     <td>${unit}</td>
                     <td><span class="badge">${kode}</span></td>
